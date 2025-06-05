@@ -110,7 +110,9 @@ Please notify the user immediately
             <div id="outputTableContainer" class="bg-white p-2 sm:p-4 rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
                 <p class="text-gray-500 italic text-center py-4">Data yang diproses akan muncul di sini.</p>
             </div>
+            <div id="processingTimeInfo" class="text-xs text-gray-500 text-center mt-3"></div>
         </div>
+
 
         <div id="actionButtonsContainer" class="mt-8 flex flex-col sm:flex-row gap-4" style="display: none;">
             <button id="copyButton" class="w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex items-center justify-center">
@@ -147,6 +149,7 @@ Please notify the user immediately
         const modalMessage = document.getElementById('modalMessage');
         const modalIconContainer = document.getElementById('modalIconContainer');
         const processingIndicator = document.getElementById('processingIndicator');
+        const processingTimeInfo = document.getElementById('processingTimeInfo');
 
         let processedDataForExport = "";
         let debounceTimer;
@@ -188,9 +191,11 @@ Please notify the user immediately
         }
 
         function processInputData() {
+            // const startTime = performance.now(); // Tidak lagi dibutuhkan untuk tampilan
             processingIndicator.style.display = 'block';
             outputContainer.style.display = 'none';
             actionButtonsContainer.style.display = 'none';
+            processingTimeInfo.textContent = "";
 
             setTimeout(() => {
                 const rawData = inputDataElement.value.trim();
@@ -223,7 +228,7 @@ Please notify the user immediately
                 }
 
                 const accounts = [];
-                const processedUsernames = new Set(); // Untuk melacak username yang sudah diproses
+                const processedUsernames = new Set();
 
                 finalEntries.forEach(entryText => {
                     const usernameMatch = entryText.match(/Username:\s*(\S+)/);
@@ -232,13 +237,9 @@ Please notify the user immediately
 
                     if (usernameMatch && detailExpiredMatch) {
                         const currentUsername = usernameMatch[1];
-
-                        // Cek apakah username ini sudah diproses
                         if (processedUsernames.has(currentUsername)) {
-                            // console.log(`Username ${currentUsername} sudah diproses, entri ini dilewati.`);
-                            return; // Lewati entri ini jika username sudah ada
+                            return;
                         }
-
                         const detailExpiredString = detailExpiredMatch[1];
                         const dateParts = detailExpiredString.match(/(\d{4})-(\d{2})-(\d{2})/);
 
@@ -249,7 +250,6 @@ Please notify the user immediately
                                 parseInt(dateParts[3])
                             );
                             expiryDateForCalc.setHours(0,0,0,0);
-
                             const timeDifference = expiryDateForCalc.getTime() - TODAY_DATE.getTime();
                             const calculatedDiffDays = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
 
@@ -260,9 +260,9 @@ Please notify the user immediately
                                         expiredOn: detailExpiredString,
                                         daysLeft: expiredOnMatch[1]
                                     });
-                                    processedUsernames.add(currentUsername); // Tambahkan username ke set setelah berhasil diproses
+                                    processedUsernames.add(currentUsername);
                                 } else {
-                                    console.warn("Entri dilewati: 'Expired on: X days left' tidak ditemukan, meski tanggal valid.", entryText.substring(0,100));
+                                    console.warn("Entri dilewati: 'Expired on: X days left' tidak ditemukan.", entryText.substring(0,100));
                                 }
                             }
                         } else {
@@ -271,10 +271,17 @@ Please notify the user immediately
                     }
                 });
 
+                // const endTime = performance.now(); // Tidak lagi dibutuhkan untuk tampilan
+                // const timeTaken = ((endTime - startTime) / 1000).toFixed(2); // Tidak lagi dibutuhkan untuk tampilan
+                const currentTime = new Date();
+                const formattedDateTime = `${currentTime.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+                const timeInfoString = `Diproses pada: ${formattedDateTime}`; // Hanya tanggal dan waktu
 
                 if (accounts.length === 0) {
                     showModal("Tidak ada data akun valid yang akan ditampilkan (mungkin semua sudah lewat, duplikat, atau format tidak sesuai).", "info");
                     outputTableContainer.innerHTML = '<p class="text-gray-600 italic text-center py-4">Tidak ada data akun yang memenuhi kriteria.</p>';
+                    processingTimeInfo.textContent = timeInfoString;
+                    outputContainer.style.display = 'block';
                     processedDataForExport = "";
                     processingIndicator.style.display = 'none';
                     return;
@@ -307,7 +314,6 @@ Please notify the user immediately
                 textOutput += "|NO|AKUN      |EXPIRED            |LEFT|\n";
                 textOutput += "|===================================|\n";
 
-
                 accounts.forEach((account, index) => {
                     tableHtml += `
                         <tr class="hover:bg-gray-50 transition-colors duration-150">
@@ -316,12 +322,10 @@ Please notify the user immediately
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300">${account.expiredOn}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm ${parseInt(account.daysLeft) <= 3 ? 'text-red-600 font-bold' : 'text-gray-700'}">${account.daysLeft}</td>
                         </tr>`;
-
                     const noStr = (index + 1).toString().padEnd(2);
                     const akunStr = account.username.padEnd(10);
                     const expiredStr = account.expiredOn.padEnd(19);
                     const leftStr = account.daysLeft.padEnd(4);
-
                     textOutput += `|${noStr}|${akunStr}|${expiredStr}|${leftStr}|\n`;
                 });
 
@@ -329,9 +333,11 @@ Please notify the user immediately
                         </tbody>
                     </table>`;
                 textOutput += "|===================================|\n";
-                textOutput += "```";
+                textOutput += "```\n\n";
+                textOutput += timeInfoString;
 
                 outputTableContainer.innerHTML = tableHtml;
+                processingTimeInfo.textContent = timeInfoString;
                 processedDataForExport = textOutput;
                 outputContainer.style.display = 'block';
                 actionButtonsContainer.style.display = 'flex';
@@ -344,6 +350,7 @@ Please notify the user immediately
             processingIndicator.style.display = 'block';
             outputContainer.style.display = 'none';
             actionButtonsContainer.style.display = 'none';
+            processingTimeInfo.textContent = "";
             debounceTimer = setTimeout(processInputData, 750);
         });
 
