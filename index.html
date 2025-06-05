@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Sisa Masa Aktif Akun</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Softer background color */
+        }
+        .table-fixed-layout {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .table-fixed-layout th, .table-fixed-layout td {
+            overflow-wrap: break-word;
+        }
+        /* Custom modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5); /* Darker overlay */
+        }
+        .modal-content {
+            background-color: #ffffff;
+            margin: 10% auto; /* Adjusted margin for better centering */
+            padding: 24px;
+            border: none;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 0.75rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .modal-close-button {
+            color: #9ca3af; /* Softer close button color */
+            position: absolute; /* Positioned for better placement */
+            top: 16px;
+            right: 16px;
+            font-size: 24px;
+            font-weight: bold;
+            transition: color 0.2s ease-in-out;
+        }
+        .modal-close-button:hover,
+        .modal-close-button:focus {
+            color: #1f2937; /* Darker on hover */
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-icon {
+            margin-right: 8px;
+        }
+        /* Loading spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px auto; /* Center spinner */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="bg-white p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all duration-500 ease-in-out">
+        <div class="text-center mb-8">
+            <i class="fas fa-user-clock fa-3x text-indigo-500 mb-3"></i>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">List Sisa Masa Aktif Akun</h1>
+            <p class="text-gray-500 mt-2">Masukkan data akun untuk melihat daftar yang akan segera kedaluwarsa. Hasil akan diproses secara otomatis.</p>
+        </div>
+
+        <div class="mb-8">
+            <label for="inputData" class="block text-sm font-semibold text-gray-700 mb-2">Masukkan Data Akun:</label>
+            <textarea id="inputData" rows="12" class="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 ease-in-out resize-y" placeholder="Contoh:
+modemsrpcombot, [05/06/2025 12:00]
+USER EXPIRATION NOTICE ❗
+━━━━━━━━━━━━━━━━━━━
+Username: adibk
+Protocol: TrojanWS
+Expired on: 3 days left
+Detail Expired: 2025-06-08 08:14:49 WIB
+━━━━━━━━━━━━━━━━━━━
+Please notify the user immediately
+..."></textarea>
+        </div>
+
+        <div id="processingIndicator" class="text-center my-4" style="display: none;">
+            <div class="loader"></div>
+            <p class="text-indigo-600">Memproses data...</p>
+        </div>
+
+        <div id="outputContainer" class="mt-8" style="display: none;">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4 text-center">Hasil Pemrosesan:</h2>
+            <div id="outputTableContainer" class="bg-white p-2 sm:p-4 rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
+                <p class="text-gray-500 italic text-center py-4">Data yang diproses akan muncul di sini.</p>
+            </div>
+        </div>
+
+        <div id="actionButtonsContainer" class="mt-8 flex flex-col sm:flex-row gap-4" style="display: none;">
+            <button id="copyButton" class="w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex items-center justify-center">
+                <i class="fas fa-copy btn-icon"></i> Salin Hasil
+            </button>
+            <button id="exportButton" class="w-full sm:w-1/2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex items-center justify-center">
+                <i class="fas fa-file-export btn-icon"></i> Export ke .txt
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal for notifications -->
+    <div id="notificationModal" class="modal">
+        <div class="modal-content relative">
+            <button class="modal-close-button" onclick="closeModal()">&times;</button>
+            <div id="modalIconContainer" class="mb-4">
+                {/* Icon will be set by JS */}
+            </div>
+            <p id="modalMessage" class="text-gray-700 text-lg"></p>
+            <button onclick="closeModal()" class="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const exportButton = document.getElementById('exportButton');
+        const copyButton = document.getElementById('copyButton');
+        const inputDataElement = document.getElementById('inputData');
+        const outputTableContainer = document.getElementById('outputTableContainer');
+        const outputContainer = document.getElementById('outputContainer');
+        const actionButtonsContainer = document.getElementById('actionButtonsContainer');
+        const notificationModal = document.getElementById('notificationModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalIconContainer = document.getElementById('modalIconContainer');
+        const processingIndicator = document.getElementById('processingIndicator');
+
+        let processedDataForExport = "";
+        let debounceTimer;
+
+        const TODAY_DATE = new Date(2025, 5, 5); // 5 Juni 2025
+        TODAY_DATE.setHours(0, 0, 0, 0);
+
+        function setModalIcon(type) {
+            let iconHtml = '';
+            switch (type) {
+                case 'success':
+                    iconHtml = '<i class="fas fa-check-circle fa-3x text-green-500"></i>';
+                    break;
+                case 'error':
+                    iconHtml = '<i class="fas fa-times-circle fa-3x text-red-500"></i>';
+                    break;
+                case 'info':
+                default:
+                    iconHtml = '<i class="fas fa-info-circle fa-3x text-blue-500"></i>';
+                    break;
+            }
+            modalIconContainer.innerHTML = iconHtml;
+        }
+
+        function showModal(message, type = 'info') {
+            setModalIcon(type);
+            modalMessage.textContent = message;
+            notificationModal.style.display = "block";
+        }
+
+        function closeModal() {
+            notificationModal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == notificationModal) {
+                closeModal();
+            }
+        }
+
+        function processInputData() {
+            processingIndicator.style.display = 'block';
+            outputContainer.style.display = 'none';
+            actionButtonsContainer.style.display = 'none';
+
+            setTimeout(() => {
+                const rawData = inputDataElement.value.trim();
+                if (!rawData) {
+                    outputTableContainer.innerHTML = '<p class="text-gray-500 italic text-center py-4">Data yang diproses akan muncul di sini.</p>';
+                    processedDataForExport = "";
+                    processingIndicator.style.display = 'none';
+                    return;
+                }
+
+                const entries = rawData.split(/modemsrpcombot, \[\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}\](?:\r\n|\r|\n)/).filter(entry => entry.trim() !== "");
+                const finalEntries = [];
+                entries.forEach(entry => {
+                    const subEntries = entry.split("USER EXPIRATION NOTICE ❗").filter(sub => sub.trim() !== "");
+                    if (subEntries.length > 1) {
+                         subEntries.forEach(subEntry => finalEntries.push("USER EXPIRATION NOTICE ❗\n" + subEntry.trim()));
+                    } else if (subEntries.length === 1) {
+                        finalEntries.push("USER EXPIRATION NOTICE ❗\n" + subEntries[0].trim());
+                    } else if (entry.includes("Username:") && entry.includes("Detail Expired:")) {
+                        finalEntries.push(entry.trim());
+                    }
+                });
+
+                if (finalEntries.length === 0 && !rawData.includes("Username:")) {
+                    showModal("Format input tidak dikenali. Pastikan data sesuai dengan contoh.", "error");
+                    outputTableContainer.innerHTML = '<p class="text-red-500 italic text-center py-4">Format input tidak dikenali.</p>';
+                    processedDataForExport = "";
+                    processingIndicator.style.display = 'none';
+                    return;
+                }
+
+                const accounts = [];
+                const processedUsernames = new Set(); // Untuk melacak username yang sudah diproses
+
+                finalEntries.forEach(entryText => {
+                    const usernameMatch = entryText.match(/Username:\s*(\S+)/);
+                    const detailExpiredMatch = entryText.match(/Detail Expired:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
+                    const expiredOnMatch = entryText.match(/Expired on:\s*(\d+)\s*days? left/);
+
+                    if (usernameMatch && detailExpiredMatch) {
+                        const currentUsername = usernameMatch[1];
+
+                        // Cek apakah username ini sudah diproses
+                        if (processedUsernames.has(currentUsername)) {
+                            // console.log(`Username ${currentUsername} sudah diproses, entri ini dilewati.`);
+                            return; // Lewati entri ini jika username sudah ada
+                        }
+
+                        const detailExpiredString = detailExpiredMatch[1];
+                        const dateParts = detailExpiredString.match(/(\d{4})-(\d{2})-(\d{2})/);
+
+                        if (dateParts) {
+                            const expiryDateForCalc = new Date(
+                                parseInt(dateParts[1]),
+                                parseInt(dateParts[2]) - 1,
+                                parseInt(dateParts[3])
+                            );
+                            expiryDateForCalc.setHours(0,0,0,0);
+
+                            const timeDifference = expiryDateForCalc.getTime() - TODAY_DATE.getTime();
+                            const calculatedDiffDays = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+
+                            if (calculatedDiffDays >= 0) {
+                                if (expiredOnMatch) {
+                                    accounts.push({
+                                        username: currentUsername,
+                                        expiredOn: detailExpiredString,
+                                        daysLeft: expiredOnMatch[1]
+                                    });
+                                    processedUsernames.add(currentUsername); // Tambahkan username ke set setelah berhasil diproses
+                                } else {
+                                    console.warn("Entri dilewati: 'Expired on: X days left' tidak ditemukan, meski tanggal valid.", entryText.substring(0,100));
+                                }
+                            }
+                        } else {
+                            console.warn("Tidak bisa parse YYYY-MM-DD dari Detail Expired:", detailExpiredString);
+                        }
+                    }
+                });
+
+
+                if (accounts.length === 0) {
+                    showModal("Tidak ada data akun valid yang akan ditampilkan (mungkin semua sudah lewat, duplikat, atau format tidak sesuai).", "info");
+                    outputTableContainer.innerHTML = '<p class="text-gray-600 italic text-center py-4">Tidak ada data akun yang memenuhi kriteria.</p>';
+                    processedDataForExport = "";
+                    processingIndicator.style.display = 'none';
+                    return;
+                }
+
+                accounts.sort((a, b) => {
+                    const daysLeftA = parseInt(a.daysLeft);
+                    const daysLeftB = parseInt(b.daysLeft);
+                    if (daysLeftA !== daysLeftB) {
+                        return daysLeftA - daysLeftB;
+                    }
+                    return a.username.localeCompare(b.username);
+                });
+
+                let tableHtml = `
+                    <table class="table-fixed-layout min-w-full divide-y divide-gray-300 border border-gray-300 rounded-lg shadow-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-300 w-1/12">NO</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-300 w-4/12">AKUN</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-300 w-5/12">EXPIRED</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-2/12">LEFT</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">`;
+
+                let textOutput = "Daftar akun yang akan segera expired :\n";
+                textOutput += "```\n";
+                textOutput += "|===================================|\n";
+                textOutput += "|NO|AKUN      |EXPIRED            |LEFT|\n";
+                textOutput += "|===================================|\n";
+
+
+                accounts.forEach((account, index) => {
+                    tableHtml += `
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300">${index + 1}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300 font-medium">${account.username}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300">${account.expiredOn}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm ${parseInt(account.daysLeft) <= 3 ? 'text-red-600 font-bold' : 'text-gray-700'}">${account.daysLeft}</td>
+                        </tr>`;
+
+                    const noStr = (index + 1).toString().padEnd(2);
+                    const akunStr = account.username.padEnd(10);
+                    const expiredStr = account.expiredOn.padEnd(19);
+                    const leftStr = account.daysLeft.padEnd(4);
+
+                    textOutput += `|${noStr}|${akunStr}|${expiredStr}|${leftStr}|\n`;
+                });
+
+                tableHtml += `
+                        </tbody>
+                    </table>`;
+                textOutput += "|===================================|\n";
+                textOutput += "```";
+
+                outputTableContainer.innerHTML = tableHtml;
+                processedDataForExport = textOutput;
+                outputContainer.style.display = 'block';
+                actionButtonsContainer.style.display = 'flex';
+                processingIndicator.style.display = 'none';
+            }, 250);
+        }
+
+        inputDataElement.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            processingIndicator.style.display = 'block';
+            outputContainer.style.display = 'none';
+            actionButtonsContainer.style.display = 'none';
+            debounceTimer = setTimeout(processInputData, 750);
+        });
+
+        copyButton.addEventListener('click', () => {
+            if (!processedDataForExport) {
+                showModal("Tidak ada data untuk disalin.", "error");
+                return;
+            }
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = processedDataForExport;
+            tempTextArea.style.position = 'absolute';
+            tempTextArea.style.left = '-9999px';
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            tempTextArea.setSelectionRange(0, 99999);
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showModal('Hasil berhasil disalin ke clipboard!', 'success');
+                } else {
+                    showModal('Gagal menyalin.', 'error');
+                }
+            } catch (err) {
+                showModal('Gagal menyalin. Error: ' + err, 'error');
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+            document.body.removeChild(tempTextArea);
+        });
+
+        exportButton.addEventListener('click', () => {
+            if (!processedDataForExport) {
+                showModal("Tidak ada data untuk diekspor.", "error");
+                return;
+            }
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            const filename = `list akun expired_${formattedDate}.txt`;
+            const blob = new Blob([processedDataForExport], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            showModal(`Data berhasil diekspor sebagai ${filename}`, 'success');
+        });
+    </script>
+</body>
+</html>
