@@ -203,6 +203,15 @@ Please notify the user immediately
 
         const TODAY_DATE = new Date(2025, 5, 5); // 5 Juni 2025
         TODAY_DATE.setHours(0, 0, 0, 0);
+        
+        // Array kata-kata mutiara dari Hadis
+        const hadithQuotes = [
+            "\"Sebaik-baik manusia adalah yang paling bermanfaat bagi manusia lain.\" (HR. Ahmad)",
+            "\"Senyummu di hadapan saudaramu adalah sedekah bagimu.\" (HR. Tirmidzi)",
+            "\"Orang yang kuat bukanlah yang pandai bergulat, tetapi orang yang mampu mengendalikan dirinya ketika marah.\" (HR. Bukhari)",
+            "\"Permudahlah, jangan mempersulit, berilah kabar gembira dan jangan membuat orang lari.\" (HR. Bukhari)",
+            "\"Setiap kebaikan adalah sedekah.\" (HR. Bukhari)"
+        ];
 
         function setModalIcon(type) {
             let iconHtml = '';
@@ -252,8 +261,6 @@ Please notify the user immediately
                     return;
                 }
 
-                // **PERBAIKAN LOGIKA PARSING**
-                // Memisahkan setiap blok data berdasarkan "USER EXPIRATION NOTICE ❗"
                 const finalEntries = rawData.split("USER EXPIRATION NOTICE ❗")
                     .filter(entry => entry.trim().includes("Username:") && entry.trim().includes("Detail Expired:"));
 
@@ -267,7 +274,7 @@ Please notify the user immediately
 
                 const accounts = [];
                 const processedUsernames = new Set();
-                let checkTimestampString = null; // Variabel untuk menyimpan timestamp pertama
+                let checkTimestampString = null;
 
                 finalEntries.forEach(entryText => {
                     const usernameMatch = entryText.match(/Username:\s*(\S+)/);
@@ -275,7 +282,6 @@ Please notify the user immediately
                     const expiredOnMatch = entryText.match(/Expired on:\s*(\d+)\s*days? left/);
 
                     if (usernameMatch && detailExpiredMatch) {
-                        // Ambil timestamp dari entri valid pertama
                         if (checkTimestampString === null) {
                             checkTimestampString = detailExpiredMatch[1];
                         }
@@ -325,12 +331,17 @@ Please notify the user immediately
                     const formattedDateTime = `${currentTime.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
                     timeInfoString = `Dicek pada: ${formattedDateTime}`;
                 }
+                
+                // Pilih kata mutiara secara acak
+                const randomQuote = hadithQuotes[Math.floor(Math.random() * hadithQuotes.length)];
+                const fullInfoHtml = `${timeInfoString}<br><i class="mt-1 block">${randomQuote}</i>`;
+                const fullInfoText = `${timeInfoString}\n\n${randomQuote}`;
 
 
                 if (accounts.length === 0) {
                     showModal("Tidak ada data akun valid yang akan ditampilkan (mungkin semua sudah lewat, duplikat, atau format tidak sesuai).", "info");
                     outputTableContainer.innerHTML = '<p class="text-gray-600 italic text-center py-4">Tidak ada data akun yang memenuhi kriteria.</p>';
-                    processingTimeInfo.textContent = timeInfoString;
+                    processingTimeInfo.innerHTML = fullInfoHtml;
                     outputContainer.style.display = 'block';
                     processedDataForExport = "";
                     processingIndicator.style.display = 'none';
@@ -384,10 +395,10 @@ Please notify the user immediately
                     </table>`;
                 textOutput += "|===================================|\n";
                 textOutput += "```\n\n";
-                textOutput += timeInfoString;
+                textOutput += fullInfoText;
 
                 outputTableContainer.innerHTML = tableHtml;
-                processingTimeInfo.textContent = timeInfoString;
+                processingTimeInfo.innerHTML = fullInfoHtml;
                 processedDataForExport = textOutput;
                 outputContainer.style.display = 'block';
                 actionButtonsContainer.style.display = 'flex';
