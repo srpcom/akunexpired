@@ -257,7 +257,6 @@ Please notify the user immediately
                 const finalEntries = rawData.split("USER EXPIRATION NOTICE ❗")
                     .filter(entry => entry.trim().includes("Username:") && entry.trim().includes("Detail Expired:"));
 
-
                 if (finalEntries.length === 0) {
                     showModal("Format input tidak dikenali atau tidak ada data akun yang valid.", "error");
                     outputTableContainer.innerHTML = '<p class="text-red-500 italic text-center py-4">Format input tidak dikenali.</p>';
@@ -268,13 +267,19 @@ Please notify the user immediately
 
                 const accounts = [];
                 const processedUsernames = new Set();
+                let checkTimestampString = null; // Variabel untuk menyimpan timestamp pertama
 
                 finalEntries.forEach(entryText => {
                     const usernameMatch = entryText.match(/Username:\s*(\S+)/);
-                    const detailExpiredMatch = entryText.match(/Detail Expired:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
+                    const detailExpiredMatch = entryText.match(/Detail Expired:\s*(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})/);
                     const expiredOnMatch = entryText.match(/Expired on:\s*(\d+)\s*days? left/);
 
                     if (usernameMatch && detailExpiredMatch) {
+                        // Ambil timestamp dari entri valid pertama
+                        if (checkTimestampString === null) {
+                            checkTimestampString = detailExpiredMatch[1];
+                        }
+                        
                         const currentUsername = usernameMatch[1];
                         if (processedUsernames.has(currentUsername)) {
                             return;
@@ -305,14 +310,22 @@ Please notify the user immediately
                                 }
                             }
                         } else {
-                            console.warn("Tidak bisa parse YYYY-MM-DD dari Detail Expired:", detailExpiredString);
+                            console.warn("Tidak bisa parse format tanggal dari Detail Expired:", detailExpiredString);
                         }
                     }
                 });
 
-                const currentTime = new Date();
-                const formattedDateTime = `${currentTime.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-                const timeInfoString = `Diproses pada: ${formattedDateTime}`;
+                let timeInfoString;
+                if(checkTimestampString) {
+                    const checkDate = new Date(checkTimestampString.replace(' ', 'T'));
+                    const formattedDateTime = `${checkDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${checkDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+                    timeInfoString = `Dicek pada: ${formattedDateTime}`;
+                } else {
+                    const currentTime = new Date();
+                    const formattedDateTime = `${currentTime.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+                    timeInfoString = `Dicek pada: ${formattedDateTime}`;
+                }
+
 
                 if (accounts.length === 0) {
                     showModal("Tidak ada data akun valid yang akan ditampilkan (mungkin semua sudah lewat, duplikat, atau format tidak sesuai).", "info");
