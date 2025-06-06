@@ -42,6 +42,18 @@
             animation: rainbow-text-animation 5s ease-in-out infinite;
         }
 
+        /* Animasi border merah menyala untuk textarea */
+        @keyframes glowing-border-animation {
+            0%   { box-shadow: 0 0 5px rgba(239, 68, 68, 0.8), inset 0 0 5px rgba(239, 68, 68, 0.5); border-color: #ef4444; }
+            50%  { box-shadow: 0 0 15px rgba(220, 38, 38, 1), inset 0 0 10px rgba(220, 38, 38, 0.7); border-color: #f87171; }
+            100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.8), inset 0 0 5px rgba(239, 68, 68, 0.5); border-color: #ef4444; }
+        }
+
+        .glowing-textarea {
+            border: 2px solid;
+            animation: glowing-border-animation 2.5s ease-in-out infinite;
+        }
+
         .table-fixed-layout {
             table-layout: fixed;
             width: 100%;
@@ -108,16 +120,18 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div class="bg-white p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all duration-500 ease-in-out">
+    <!-- Splash Screen Dihapus -->
+
+    <div class="bg-green-200/50 backdrop-blur-sm p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all duration-500 ease-in-out">
         <div class="text-center mb-8">
             <i class="fas fa-user-clock fa-3x text-indigo-500 mb-3"></i>
             <h1 class="rainbow-title text-3xl md:text-4xl font-bold">List Sisa Masa Aktif Akun</h1>
-            <p class="text-gray-500 mt-2">Masukkan data akun untuk melihat daftar yang akan segera kedaluwarsa. Hasil akan diproses secara otomatis.</p>
+            <p class="text-gray-600 mt-2">Masukkan data akun untuk melihat daftar yang akan segera kedaluwarsa. Hasil akan diproses secara otomatis.</p>
         </div>
 
         <div class="mb-8">
             <label for="inputData" class="block text-sm font-semibold text-gray-700 mb-2">Masukkan Data Akun:</label>
-            <textarea id="inputData" rows="12" class="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 ease-in-out resize-y" placeholder="Contoh:
+            <textarea id="inputData" rows="12" class="glowing-textarea w-full p-4 rounded-lg bg-blue-100 transition-shadow duration-200 ease-in-out resize-y" placeholder="Contoh:
 modemsrpcombot, [05/06/2025 12:00]
 USER EXPIRATION NOTICE ❗
 ━━━━━━━━━━━━━━━━━━━
@@ -169,6 +183,9 @@ Please notify the user immediately
     </div>
 
     <script>
+        // Splash Screen Logic Dihapus
+        
+        // Main App Logic
         const exportButton = document.getElementById('exportButton');
         const copyButton = document.getElementById('copyButton');
         const inputDataElement = document.getElementById('inputData');
@@ -295,139 +312,4 @@ Please notify the user immediately
                                 }
                             }
                         } else {
-                            console.warn("Tidak bisa parse YYYY-MM-DD dari Detail Expired:", detailExpiredString);
-                        }
-                    }
-                });
-
-                const currentTime = new Date();
-                const formattedDateTime = `${currentTime.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-                const timeInfoString = `Diproses pada: ${formattedDateTime}`;
-
-                if (accounts.length === 0) {
-                    showModal("Tidak ada data akun valid yang akan ditampilkan (mungkin semua sudah lewat, duplikat, atau format tidak sesuai).", "info");
-                    outputTableContainer.innerHTML = '<p class="text-gray-600 italic text-center py-4">Tidak ada data akun yang memenuhi kriteria.</p>';
-                    processingTimeInfo.textContent = timeInfoString;
-                    outputContainer.style.display = 'block';
-                    processedDataForExport = "";
-                    processingIndicator.style.display = 'none';
-                    return;
-                }
-
-                accounts.sort((a, b) => {
-                    const daysLeftA = parseInt(a.daysLeft);
-                    const daysLeftB = parseInt(b.daysLeft);
-                    if (daysLeftA !== daysLeftB) {
-                        return daysLeftA - daysLeftB;
-                    }
-                    return a.username.localeCompare(b.username);
-                });
-
-                let tableHtml = `
-                    <table class="table-fixed-layout min-w-full divide-y divide-gray-300 border border-gray-300 rounded-lg shadow-sm">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-300 w-1/12">NO</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-300 w-4/12">AKUN</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-300 w-5/12">EXPIRED</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-2/12">LEFT</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">`;
-
-                let textOutput = "Daftar akun yang akan segera expired :\n";
-                textOutput += "```\n";
-                textOutput += "|===================================|\n";
-                textOutput += "|NO|AKUN      |EXPIRED            |LEFT|\n";
-                textOutput += "|===================================|\n";
-
-                accounts.forEach((account, index) => {
-                    tableHtml += `
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300">${index + 1}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300 font-medium">${account.username}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300">${account.expiredOn}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-sm ${parseInt(account.daysLeft) <= 3 ? 'text-red-600 font-bold' : 'text-gray-700'}">${account.daysLeft}</td>
-                        </tr>`;
-                    const noStr = (index + 1).toString().padEnd(2);
-                    const akunStr = account.username.padEnd(10);
-                    const expiredStr = account.expiredOn.padEnd(19);
-                    const leftStr = account.daysLeft.padEnd(4);
-                    textOutput += `|${noStr}|${akunStr}|${expiredStr}|${leftStr}|\n`;
-                });
-
-                tableHtml += `
-                        </tbody>
-                    </table>`;
-                textOutput += "|===================================|\n";
-                textOutput += "```\n\n";
-                textOutput += timeInfoString;
-
-                outputTableContainer.innerHTML = tableHtml;
-                processingTimeInfo.textContent = timeInfoString;
-                processedDataForExport = textOutput;
-                outputContainer.style.display = 'block';
-                actionButtonsContainer.style.display = 'flex';
-                processingIndicator.style.display = 'none';
-            }, 250);
-        }
-
-        inputDataElement.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            processingIndicator.style.display = 'block';
-            outputContainer.style.display = 'none';
-            actionButtonsContainer.style.display = 'none';
-            processingTimeInfo.textContent = "";
-            debounceTimer = setTimeout(processInputData, 750);
-        });
-
-        copyButton.addEventListener('click', () => {
-            if (!processedDataForExport) {
-                showModal("Tidak ada data untuk disalin.", "error");
-                return;
-            }
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = processedDataForExport;
-            tempTextArea.style.position = 'absolute';
-            tempTextArea.style.left = '-9999px';
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            tempTextArea.setSelectionRange(0, 99999);
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showModal('Hasil berhasil disalin ke clipboard!', 'success');
-                } else {
-                    showModal('Gagal menyalin.', 'error');
-                }
-            } catch (err) {
-                showModal('Gagal menyalin. Error: ' + err, 'error');
-                console.error('Fallback: Oops, unable to copy', err);
-            }
-            document.body.removeChild(tempTextArea);
-        });
-
-        exportButton.addEventListener('click', () => {
-            if (!processedDataForExport) {
-                showModal("Tidak ada data untuk diekspor.", "error");
-                return;
-            }
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const formattedDate = `${year}-${month}-${day}`;
-            const filename = `list akun expired_${formattedDate}.txt`;
-            const blob = new Blob([processedDataForExport], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-            showModal(`Data berhasil diekspor sebagai ${filename}`, 'success');
-        });
-    </script>
-</body>
-</html>
+                            console.warn("Tidak bisa pa
