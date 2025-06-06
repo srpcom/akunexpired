@@ -252,21 +252,14 @@ Please notify the user immediately
                     return;
                 }
 
-                const entries = rawData.split(/modemsrpcombot, \[\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}\](?:\r\n|\r|\n)/).filter(entry => entry.trim() !== "");
-                const finalEntries = [];
-                entries.forEach(entry => {
-                    const subEntries = entry.split("USER EXPIRATION NOTICE ❗").filter(sub => sub.trim() !== "");
-                    if (subEntries.length > 1) {
-                         subEntries.forEach(subEntry => finalEntries.push("USER EXPIRATION NOTICE ❗\n" + subEntry.trim()));
-                    } else if (subEntries.length === 1) {
-                        finalEntries.push("USER EXPIRATION NOTICE ❗\n" + subEntries[0].trim());
-                    } else if (entry.includes("Username:") && entry.includes("Detail Expired:")) {
-                        finalEntries.push(entry.trim());
-                    }
-                });
+                // **PERBAIKAN LOGIKA PARSING**
+                // Memisahkan setiap blok data berdasarkan "USER EXPIRATION NOTICE ❗"
+                const finalEntries = rawData.split("USER EXPIRATION NOTICE ❗")
+                    .filter(entry => entry.trim().includes("Username:") && entry.trim().includes("Detail Expired:"));
 
-                if (finalEntries.length === 0 && !rawData.includes("Username:")) {
-                    showModal("Format input tidak dikenali. Pastikan data sesuai dengan contoh.", "error");
+
+                if (finalEntries.length === 0) {
+                    showModal("Format input tidak dikenali atau tidak ada data akun yang valid.", "error");
                     outputTableContainer.innerHTML = '<p class="text-red-500 italic text-center py-4">Format input tidak dikenali.</p>';
                     processedDataForExport = "";
                     processingIndicator.style.display = 'none';
@@ -312,4 +305,139 @@ Please notify the user immediately
                                 }
                             }
                         } else {
-                            console.warn("Tidak bisa pa
+                            console.warn("Tidak bisa parse YYYY-MM-DD dari Detail Expired:", detailExpiredString);
+                        }
+                    }
+                });
+
+                const currentTime = new Date();
+                const formattedDateTime = `${currentTime.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+                const timeInfoString = `Diproses pada: ${formattedDateTime}`;
+
+                if (accounts.length === 0) {
+                    showModal("Tidak ada data akun valid yang akan ditampilkan (mungkin semua sudah lewat, duplikat, atau format tidak sesuai).", "info");
+                    outputTableContainer.innerHTML = '<p class="text-gray-600 italic text-center py-4">Tidak ada data akun yang memenuhi kriteria.</p>';
+                    processingTimeInfo.textContent = timeInfoString;
+                    outputContainer.style.display = 'block';
+                    processedDataForExport = "";
+                    processingIndicator.style.display = 'none';
+                    return;
+                }
+
+                accounts.sort((a, b) => {
+                    const daysLeftA = parseInt(a.daysLeft);
+                    const daysLeftB = parseInt(b.daysLeft);
+                    if (daysLeftA !== daysLeftB) {
+                        return daysLeftA - daysLeftB;
+                    }
+                    return a.username.localeCompare(b.username);
+                });
+
+                let tableHtml = `
+                    <table class="table-fixed-layout min-w-full divide-y divide-gray-300 border border-gray-300 rounded-lg shadow-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-300 w-1/12">NO</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-300 w-4/12">AKUN</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-300 w-5/12">EXPIRED</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-2/12">LEFT</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">`;
+
+                let textOutput = "Daftar akun yang akan segera expired :\n";
+                textOutput += "```\n";
+                textOutput += "|===================================|\n";
+                textOutput += "|NO|AKUN      |EXPIRED            |LEFT|\n";
+                textOutput += "|===================================|\n";
+
+                accounts.forEach((account, index) => {
+                    tableHtml += `
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300">${index + 1}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300 font-medium">${account.username}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300">${account.expiredOn}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm ${parseInt(account.daysLeft) <= 3 ? 'text-red-600 font-bold' : 'text-gray-700'}">${account.daysLeft}</td>
+                        </tr>`;
+                    const noStr = (index + 1).toString().padEnd(2);
+                    const akunStr = account.username.padEnd(10);
+                    const expiredStr = account.expiredOn.padEnd(19);
+                    const leftStr = account.daysLeft.padEnd(4);
+                    textOutput += `|${noStr}|${akunStr}|${expiredStr}|${leftStr}|\n`;
+                });
+
+                tableHtml += `
+                        </tbody>
+                    </table>`;
+                textOutput += "|===================================|\n";
+                textOutput += "```\n\n";
+                textOutput += timeInfoString;
+
+                outputTableContainer.innerHTML = tableHtml;
+                processingTimeInfo.textContent = timeInfoString;
+                processedDataForExport = textOutput;
+                outputContainer.style.display = 'block';
+                actionButtonsContainer.style.display = 'flex';
+                processingIndicator.style.display = 'none';
+            }, 250);
+        }
+
+        inputDataElement.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            processingIndicator.style.display = 'block';
+            outputContainer.style.display = 'none';
+            actionButtonsContainer.style.display = 'none';
+            processingTimeInfo.textContent = "";
+            debounceTimer = setTimeout(processInputData, 750);
+        });
+
+        copyButton.addEventListener('click', () => {
+            if (!processedDataForExport) {
+                showModal("Tidak ada data untuk disalin.", "error");
+                return;
+            }
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = processedDataForExport;
+            tempTextArea.style.position = 'absolute';
+            tempTextArea.style.left = '-9999px';
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            tempTextArea.setSelectionRange(0, 99999);
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showModal('Hasil berhasil disalin ke clipboard!', 'success');
+                } else {
+                    showModal('Gagal menyalin.', 'error');
+                }
+            } catch (err) {
+                showModal('Gagal menyalin. Error: ' + err, 'error');
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+            document.body.removeChild(tempTextArea);
+        });
+
+        exportButton.addEventListener('click', () => {
+            if (!processedDataForExport) {
+                showModal("Tidak ada data untuk diekspor.", "error");
+                return;
+            }
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const hours = String(today.getHours()).padStart(2, '0');
+            const minutes = String(today.getMinutes()).padStart(2, '0');
+            const formattedDate = `${day}_${hours}.${minutes}`;
+            const filename = `akun expired_${formattedDate}.txt`;
+            const blob = new Blob([processedDataForExport], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            showModal(`Data berhasil diekspor sebagai ${filename}`, 'success');
+        });
+    </script>
+</body>
+</html>
