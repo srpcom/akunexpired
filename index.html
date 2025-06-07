@@ -7,9 +7,7 @@
     <!-- Favicon dengan huruf A -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%234f46e5%22 rx=%2215%22></rect><text y=%22.9em%22 x=%2250%%22 font-size=%2280%22 fill=%22%23ffffff%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22bold%22>A</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Library untuk screenshot -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Animasi background pelangi */
@@ -35,27 +33,17 @@
             100% { background-position: 0% 50% }
         }
 
-        /* Efek Teks 3D Pelangi */
-        .title-3d-rainbow {
-            position: relative;
-            font-weight: 900;
-        }
-        
-        .title-3d-rainbow span {
-            position: relative;
+        /* Gaya Judul Pelangi Segar */
+        .fresh-rainbow-title {
+            font-weight: 800; /* Font tebal untuk kejelasan */
             background: linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #8b5cf6, #ec4899);
             background-size: 200% auto;
             color: transparent;
             background-clip: text;
             -webkit-background-clip: text;
             animation: rainbow-animation 5s ease-in-out infinite;
-            text-shadow: 
-                1px 1px 0px rgba(0,0,0,0.1),
-                2px 2px 0px rgba(0,0,0,0.09),
-                3px 3px 0px rgba(0,0,0,0.08),
-                4px 4px 0px rgba(0,0,0,0.07),
-                5px 5px 8px rgba(0, 0, 0, 0.2);
         }
+
 
         /* Border pelangi dinamis untuk textarea */
         .rainbow-border-container {
@@ -134,8 +122,7 @@
     <!-- Kontainer utama dengan background biru transparan -->
     <div class="bg-blue-200/50 backdrop-blur-sm p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all duration-500 ease-in-out">
         <div class="text-center mb-8">
-            <i class="fas fa-user-clock fa-3x text-indigo-500 mb-3"></i>
-            <h1 class="title-3d-rainbow text-3xl md:text-4xl"><span>List Sisa Masa Aktif Akun</span></h1>
+            <h1 class="fresh-rainbow-title text-3xl md:text-4xl">List Sisa Masa Aktif Akun</h1>
             <p class="text-gray-600 mt-2">Masukkan data akun untuk melihat daftar yang akan segera kedaluwarsa. Hasil akan diproses secara otomatis.</p>
         </div>
 
@@ -171,14 +158,11 @@ Please notify the user immediately
 
 
         <div id="actionButtonsContainer" class="mt-8 flex flex-col sm:flex-row gap-4" style="display: none;">
-            <button id="copyButton" class="w-full sm:w-1/3 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex items-center justify-center">
+            <button id="copyButton" class="w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex items-center justify-center">
                 <i class="fas fa-copy btn-icon"></i> Salin
             </button>
-            <button id="exportButton" class="w-full sm:w-1/3 bg-green-700 hover:bg-green-800 text-white font-semibold py-3 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex items-center justify-center">
+            <button id="exportButton" class="w-full sm:w-1/2 bg-green-700 hover:bg-green-800 text-white font-semibold py-3 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex items-center justify-center">
                 <i class="fas fa-file-export btn-icon"></i> Export
-            </button>
-            <button id="whatsappButton" class="w-full sm:w-1/3 text-white font-semibold py-3 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex items-center justify-center bg-[#25D366] hover:bg-[#128C7E]">
-                <i class="fab fa-whatsapp btn-icon"></i> Kirim ke WA
             </button>
         </div>
     </div>
@@ -201,7 +185,6 @@ Please notify the user immediately
         // Main App Logic
         const exportButton = document.getElementById('exportButton');
         const copyButton = document.getElementById('copyButton');
-        const whatsappButton = document.getElementById('whatsappButton');
         const inputDataElement = document.getElementById('inputData');
         const outputTableContainer = document.getElementById('outputTableContainer');
         const outputContainer = document.getElementById('outputContainer');
@@ -214,14 +197,107 @@ Please notify the user immediately
 
         let processedDataForExport = "";
         let debounceTimer;
-        let accounts = []; // Deklarasi 'accounts' di scope global
         
         const hadithQuotes = [
-            "\"Sebaik-baik manusia adalah yang paling bermanfaat bagi manusia lain.\" (HR. Ahmad)",
-            "\"Senyummu di hadapan saudaramu adalah sedekah bagimu.\" (HR. Tirmidzi)",
-            "\"Orang yang kuat bukanlah yang pandai bergulat, tetapi orang yang mampu mengendalikan dirinya ketika marah.\" (HR. Bukhari)",
-            "\"Permudahlah, jangan mempersulit, berilah kabar gembira dan jangan membuat orang lari.\" (HR. Bukhari)",
-            "\"Setiap kebaikan adalah sedekah.\" (HR. Bukhari)"
+            "\"Sebaik-baik manusia adalah yang paling bermanfaat bagi manusia lain.\"",
+            "\"Senyummu di hadapan saudaramu adalah sedekah bagimu.\"",
+            "\"Orang yang kuat bukanlah yang pandai bergulat, tetapi orang yang mampu mengendalikan dirinya ketika marah.\"",
+            "\"Permudahlah, jangan mempersulit, berilah kabar gembira dan jangan membuat orang lari.\"",
+            "\"Setiap kebaikan adalah sedekah.\"",
+            "\"Dunia adalah penjara bagi orang beriman dan surga bagi orang kafir.\"",
+            "\"Barangsiapa yang menempuh jalan untuk mencari ilmu, maka Allah akan mudahkan baginya jalan menuju surga.\"",
+            "\"Jadilah di dunia ini seakan-akan kamu orang asing atau seorang pengembara.\"",
+            "\"Tinggalkanlah yang meragukanmu kepada yang tidak meragukanmu.\"",
+            "\"Sesungguhnya amal itu tergantung pada niatnya.\"",
+            "\"Kekayaan bukanlah dengan banyaknya harta, namun kekayaan adalah kekayaan jiwa.\"",
+            "\"Janganlah kamu marah, maka bagimu surga.\"",
+            "\"Barangsiapa yang beriman kepada Allah dan hari akhir, maka hendaklah ia berkata baik atau diam.\"",
+            "\"Cintailah kekasihmu sekadarnya, boleh jadi suatu saat nanti ia akan menjadi orang yang engkau benci.\"",
+            "\"Tanda kebaikan Islam seseorang adalah meninggalkan hal yang tidak bermanfaat.\"",
+            "\"Manfaatkanlah lima perkara sebelum lima perkara: waktu mudamu sebelum datang waktu tuamu, waktu sehatmu sebelum datang waktu sakitmu, masa kayamu sebelum datang masa kefakiranmu, masa luangmu sebelum datang masa sibukmu, hidupmu sebelum datang matimu.\"",
+            "\"Tidak ada ketaatan kepada makhluk dalam bermaksiat kepada Al-Khaliq (Sang Pencipta).\"",
+            "\"Seorang muslim adalah saudara muslim lainnya, ia tidak menzaliminya, tidak membiarkannya (dalam kesulitan), tidak mendustainya, dan tidak menghinanya.\"",
+            "\"Takwa itu di sini (sambil menunjuk ke dadanya tiga kali).\"",
+            "\"Sesungguhnya Allah tidak melihat pada bentuk rupa dan harta kalian, tetapi Dia melihat pada hati dan amalan kalian.\"",
+            "\"Barangsiapa yang memudahkan kesulitan orang lain, maka Allah akan memudahkan urusannya di dunia dan akhirat.\"",
+            "\"Doa adalah senjata orang mukmin.\"",
+            "\"Kebersihan adalah sebagian dari iman.\"",
+            "\"Tuntutlah ilmu dari buaian hingga liang lahat.\"",
+            "\"Jagalah Allah, niscaya Dia akan menjagamu.\"",
+            "\"Jika kamu tidak malu, berbuatlah sesukamu.\"",
+            "\"Setiap anak Adam sering berbuat salah, dan sebaik-baik orang yang berbuat salah adalah yang mau bertaubat.\"",
+            "\"Dunia ini terlaknat, dan segala isinya juga terlaknat, kecuali dzikir kepada Allah dan apa yang mengikutinya, serta orang alim atau penuntut ilmu.\"",
+            "\"Sabar adalah cahaya.\"",
+            "\"Barangsiapa yang dikehendaki Allah menjadi baik, maka Dia akan memberikannya pemahaman dalam agama.\"",
+            "\"Berbekallah, dan sesungguhnya sebaik-baik bekal adalah takwa.\"",
+            "\"Sesungguhnya kejujuran akan menunjukkan kepada kebaikan, dan kebaikan itu akan menghantarkan ke surga.\"",
+            "\"Jauhilah oleh kalian perbuatan hasad (iri/dengki), karena sesungguhnya hasad itu memakan kebaikan-kebaikan sebagaimana api memakan kayu bakar.\"",
+            "\"Barangsiapa tidak menyayangi, maka ia tidak akan disayangi.\"",
+            "\"Tangan di atas lebih baik daripada tangan di bawah.\"",
+            "\"Tidaklah berkurang harta karena sedekah.\"",
+            "\"Barangsiapa yang memberi kelonggaran kepada orang yang kesulitan, maka Allah akan memberi kelonggaran baginya di dunia dan akhirat.\"",
+            "\"Bukanlah dari golongan kami siapa saja yang tidak menyayangi yang lebih kecil dari kami dan tidak menghormati yang lebih tua dari kami.\"",
+            "\"Amalan yang paling dicintai oleh Allah adalah yang paling terus-menerus (istiqomah) walaupun sedikit.\"",
+            "\"Bertutur katalah yang baik kepada manusia.\"",
+            "\"Allah tidak akan menyayangi orang yang tidak menyayangi manusia.\"",
+            "\"Ikatlah ilmu dengan menuliskannya.\"",
+            "\"Setiap yang memabukkan adalah khamr, dan setiap khamr adalah haram.\"",
+            "\"Hindarilah tujuh dosa yang membinasakan.\"",
+            "\"Shalat adalah tiang agama.\"",
+            "\"Barangsiapa yang menipu, maka ia bukan dari golongan kami.\"",
+            "\"Berilah pekerja upahnya sebelum keringatnya kering.\"",
+            "\"Kalian tidak akan masuk surga hingga kalian beriman, dan tidak akan beriman hingga kalian saling mencintai.\"",
+            "\"Permisalan teman yang baik dan teman yang buruk ibarat seorang penjual minyak wangi dan seorang pandai besi.\"",
+            "\"Orang yang menunjuki kepada kebaikan, ia akan mendapat pahala seperti pahala orang yang mengerjakannya.\"",
+            "\"Barangsiapa di antara kalian melihat kemungkaran, maka ubahlah dengan tangannya. Jika tidak mampu, maka dengan lisannya. Jika tidak mampu, maka dengan hatinya, dan itulah selemah-lemahnya iman.\"",
+            "\"Sesungguhnya Allah menyukai jika salah seorang dari kalian melakukan suatu pekerjaan, ia melakukannya dengan baik (itqan).\"",
+            "\"Agama itu mudah.\"",
+            "\"Malu adalah sebagian dari iman.\"",
+            "\"Janganlah salah seorang dari kalian meremehkan kebaikan sedikitpun, meskipun hanya dengan bertemu saudaramu dengan wajah yang berseri-seri.\"",
+            "\"Dua nikmat yang banyak manusia tertipu di dalamnya: kesehatan dan waktu luang.\"",
+            "\"Mencari ilmu itu wajib bagi setiap muslim.\"",
+            "\"Berdoalah kepada Allah dalam keadaan yakin akan dikabulkan.\"",
+            "\"Barangsiapa yang diam, dia selamat.\"",
+            "\"Sesungguhnya di antara tanda-tanda kiamat adalah diangkatnya ilmu dan tersebarnya kebodohan.\"",
+            "\"Balaslah keburukan dengan kebaikan, niscaya ia akan hilang.\"",
+            "\"Barangsiapa ingin dilapangkan rezekinya dan dipanjangkan umurnya, hendaklah ia menyambung tali silaturahmi.\"",
+            "\"Sesungguhnya Allah itu indah dan menyukai keindahan.\"",
+            "\"Setiap sendi badan manusia wajib disedekahi setiap hari di mana matahari terbit.\"",
+            "\"Tidak halal bagi seorang muslim untuk tidak bertegur sapa dengan saudaranya lebih dari tiga hari.\"",
+            "\"Sesungguhnya Allah Maha Lembut dan menyukai kelembutan dalam segala urusan.\"",
+            "\"Tidak ada hijrah setelah Fathu Makkah, tetapi yang ada adalah jihad dan niat.\"",
+            "\"Seseorang itu tergantung pada agama temannya, maka perhatikanlah siapa yang menjadi temannya.\"",
+            "\"Tidaklah seorang hamba menutupi aib hamba lainnya di dunia, melainkan Allah akan menutupi aibnya di hari kiamat.\"",
+            "\"Makanlah dari apa yang ada di dekatmu.\"",
+            "\"Seorang mukmin dengan mukmin lainnya seperti sebuah bangunan, sebagian menguatkan sebagian yang lain.\"",
+            "\"Janganlah kalian saling membenci, janganlah saling mendengki, dan janganlah saling membelakangi.\"",
+            "\"Barangsiapa yang membaca satu huruf dari Al-Quran, maka baginya satu kebaikan dengan sepuluh kali lipatnya.\"",
+            "\"Puasa adalah perisai.\"",
+            "\"Umrah ke umrah adalah penghapus dosa di antara keduanya.\"",
+            "\"Bersegeralah bersedekah, sebab bala bencana tidak pernah bisa mendahului sedekah.\"",
+            "\"Barangsiapa membangun masjid karena Allah, maka Allah akan membangunkan untuknya rumah di surga.\"",
+            "\"Setiap jiwa akan merasakan mati.\"",
+            "\"Aku diutus untuk menyempurnakan akhlak yang mulia.\"",
+            "\"Tidak akan bergeser kedua kaki seorang hamba pada hari kiamat hingga ditanya tentang empat perkara.\"",
+            "\"Berbicaralah sesuai dengan kadar pemahaman lawan bicaramu.\"",
+            "\"Agama adalah nasihat.\"",
+            "\"Niat seorang mukmin lebih baik dari amalnya.\"",
+            "\"Jika engkau melihat umatku takut untuk mengatakan kepada orang zalim, 'Engkau zalim', maka tinggalkanlah mereka.\"",
+            "\"Katakanlah yang benar walaupun itu pahit.\"",
+            "\"Siapa yang menahan amarahnya padahal mampu melampiaskannya, Allah akan memanggilnya di hadapan seluruh makhluk pada hari kiamat.\"",
+            "\"Orang yang bangkrut dari umatku ialah orang yang datang pada hari Kiamat dengan membawa amalan puasa, shalat, dan zakat. Namun, ia datang dalam keadaan pernah mencaci maki si ini, menuduh si itu, memakan harta si ini, menumpahkan darah si itu, dan memukul si ini. Maka, diberikanlah kepada si ini kebaikannya dan si itu kebaikannya. Jika kebaikannya telah habis sebelum ia melunasi segala dosanya, maka diambillah dosa-dosa mereka dan dilemparkan kepadanya, kemudian ia dilemparkan ke dalam neraka.\"",
+            "\"Sesungguhnya di dalam tubuh ada segumpal daging. Jika ia baik, maka baik pula seluruh tubuh. Jika ia rusak, maka rusak pula seluruh tubuh. Ketahuilah bahwa ia adalah hati.\"",
+            "\"Janganlah kalian masuk ke dalam rumah orang lain sebelum meminta izin dan memberi salam kepada penghuninya.\"",
+            "\"Perbaharuilah iman kalian. Dikatakan, 'Wahai Rasulullah, bagaimana kami memperbarui iman kami?' Beliau bersabda, 'Perbanyaklah mengucapkan Laa ilaha illallah.'\"",
+            "\"Barangsiapa yang menempuh suatu jalan untuk menuntut ilmu, maka Allah akan memudahkan jalannya ke surga.\"",
+            "\"Tidaklah seorang muslim tertimpa suatu kelelahan, atau penyakit, atau kekhawatiran, atau kesedihan, atau gangguan, atau kesusahan, bahkan duri yang melukainya, melainkan Allah akan menghapus sebagian dari kesalahan-kesalahannya.\"",
+            "\"Tidak ada iman bagi orang yang tidak memiliki amanah, dan tidak ada agama bagi orang yang tidak menepati janjinya.\"",
+            "\"Cukuplah seseorang dikatakan pendusta jika ia menceritakan segala apa yang ia dengar.\"",
+            "\"Meninggalkan perdebatan meskipun engkau benar akan membangunkanmu sebuah rumah di tengah surga.\"",
+            "\"Keutamaan orang alim atas orang ahli ibadah adalah seperti keutamaan bulan purnama atas seluruh bintang-bintang.\"",
+            "\"Sesungguhnya para malaikat meletakkan sayap-sayapnya bagi para penuntut ilmu karena ridha terhadap apa yang ia cari.\"",
+            "\"Barangsiapa keluar untuk mencari ilmu maka ia berada di jalan Allah hingga ia kembali.\"",
+            "\"Dua kalimat yang ringan di lisan, berat di timbangan, dan dicintai oleh Ar-Rahman: Subhanallahi wa bihamdihi, Subhanallahil 'azhim.\""
         ];
 
         function setModalIcon(type) {
@@ -269,7 +345,6 @@ Please notify the user immediately
                 if (!rawData) {
                     outputTableContainer.innerHTML = '<p class="text-gray-500 italic text-center py-4">Data yang diproses akan muncul di sini.</p>';
                     processedDataForExport = "";
-                    accounts = []; // Kosongkan array saat tidak ada input
                     processingIndicator.style.display = 'none';
                     return;
                 }
@@ -281,12 +356,11 @@ Please notify the user immediately
                     showModal("Format input tidak dikenali atau tidak ada data akun yang valid.", "error");
                     outputTableContainer.innerHTML = '<p class="text-red-500 italic text-center py-4">Format input tidak dikenali.</p>';
                     processedDataForExport = "";
-                    accounts = []; // Kosongkan array
                     processingIndicator.style.display = 'none';
                     return;
                 }
 
-                accounts = []; // Reset array sebelum diisi kembali
+                const accounts = [];
                 const processedUsernames = new Set();
                 
                 finalEntries.forEach(entryText => {
@@ -451,37 +525,6 @@ Please notify the user immediately
             URL.revokeObjectURL(link.href);
             showModal(`Data berhasil diekspor sebagai ${filename}`, 'success');
         });
-
-        whatsappButton.addEventListener('click', () => {
-            if (outputContainer.style.display === 'none' || accounts.length === 0) {
-                showModal("Tidak ada hasil untuk di-screenshot. Silakan proses data terlebih dahulu.", "error");
-                return;
-            }
-            showModal("Mempersiapkan gambar...", "info");
-
-            html2canvas(document.getElementById('outputContainer'), {
-                backgroundColor: "#ffffff", // Beri background putih agar tidak transparan
-                useCORS: true 
-            }).then(canvas => {
-                const image = canvas.toDataURL("image/jpeg", 0.9);
-                const link = document.createElement('a');
-                
-                const today = new Date();
-                const day = String(today.getDate()).padStart(2, '0');
-                const hours = String(today.getHours()).padStart(2, '0');
-                const minutes = String(today.getMinutes()).padStart(2, '0');
-                const formattedDate = `${day}_${hours}.${minutes}`;
-                link.download = `hasil_akun_${formattedDate}.jpg`;
-                
-                link.href = image;
-                link.click();
-                showModal("Gambar telah diunduh. Silakan buka WhatsApp dan kirim file tersebut secara manual.", "success");
-            }).catch(err => {
-                console.error("Gagal membuat screenshot:", err);
-                showModal("Maaf, terjadi kesalahan saat membuat screenshot.", "error");
-            });
-        });
-
     </script>
 </body>
 </html>
