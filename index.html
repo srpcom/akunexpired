@@ -370,6 +370,12 @@ Please notify the user immediately
 
                     if (usernameMatch && detailExpiredMatch) {
                         const currentUsername = usernameMatch[1];
+                        
+                        // **Logika baru untuk melewati akun trial**
+                        if (currentUsername.toLowerCase().startsWith('trial')) {
+                            return; // Lewati iterasi ini
+                        }
+
                         if (processedUsernames.has(currentUsername)) {
                             return;
                         }
@@ -424,9 +430,9 @@ Please notify the user immediately
 
                 let textOutput = "Daftar akun yang akan segera expired :\n";
                 textOutput += "```\n";
-                textOutput += "|===================================|\n";
+                textOutput += "|======================================|\n";
                 textOutput += "|NO|AKUN      |EXPIRED            |LEFT|\n";
-                textOutput += "|===================================|\n";
+                textOutput += "|======================================|\n";
 
                 accounts.forEach((account, index) => {
                     let rowColorClass = 'hover:bg-gray-100';
@@ -446,7 +452,8 @@ Please notify the user immediately
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">${account.expiredOn}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800 font-bold">${account.daysLeft}</td>
                         </tr>`;
-                    const noStr = (index + 1).toString().padEnd(2);
+                    
+                    const noStr = String(index + 1).padEnd(2);
                     const akunStr = account.username.padEnd(10);
                     const expiredStr = account.expiredOn.padEnd(19);
                     const leftStr = account.daysLeft.padEnd(4);
@@ -456,7 +463,7 @@ Please notify the user immediately
                 tableHtml += `
                         </tbody>
                     </table>`;
-                textOutput += "|===================================|\n";
+                textOutput += "|======================================|\n";
                 textOutput += "```\n\n";
                 textOutput += fullInfoText;
 
