@@ -7,7 +7,7 @@
     <!-- Favicon dengan huruf A -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%234f46e5%22 rx=%2215%22></rect><text y=%22.9em%22 x=%2250%%22 font-size=%2280%22 fill=%22%23ffffff%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22bold%22>A</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Animasi background pelangi */
@@ -25,33 +25,42 @@
             font-family: 'Inter', sans-serif;
             animation: rainbow-bg 20s linear infinite;
         }
-
-        /* Animasi teks pelangi untuk judul */
-        @keyframes rainbow-text-animation {
+        
+        /* Animasi warna berjalan */
+        @keyframes rainbow-animation {
             0% { background-position: 0% 50% }
             50% { background-position: 100% 50% }
             100% { background-position: 0% 50% }
         }
 
-        .rainbow-title {
+        /* Efek Teks 3D Pelangi */
+        .title-3d-rainbow {
+            position: relative;
+            font-weight: 900;
+        }
+        
+        .title-3d-rainbow span {
+            position: relative;
             background: linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #8b5cf6, #ec4899);
             background-size: 200% auto;
             color: transparent;
             background-clip: text;
             -webkit-background-clip: text;
-            animation: rainbow-text-animation 5s ease-in-out infinite;
+            animation: rainbow-animation 5s ease-in-out infinite;
+            text-shadow: 
+                1px 1px 0px rgba(0,0,0,0.1),
+                2px 2px 0px rgba(0,0,0,0.09),
+                3px 3px 0px rgba(0,0,0,0.08),
+                4px 4px 0px rgba(0,0,0,0.07),
+                5px 5px 8px rgba(0, 0, 0, 0.2);
         }
 
-        /* Animasi border merah menyala untuk textarea */
-        @keyframes glowing-border-animation {
-            0%   { box-shadow: 0 0 5px rgba(239, 68, 68, 0.8), inset 0 0 5px rgba(239, 68, 68, 0.5); border-color: #ef4444; }
-            50%  { box-shadow: 0 0 15px rgba(220, 38, 38, 1), inset 0 0 10px rgba(220, 38, 38, 0.7); border-color: #f87171; }
-            100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.8), inset 0 0 5px rgba(239, 68, 68, 0.5); border-color: #ef4444; }
-        }
-
-        .glowing-textarea {
-            border: 2px solid;
-            animation: glowing-border-animation 2.5s ease-in-out infinite;
+        /* Border pelangi dinamis untuk textarea */
+        .rainbow-border-container {
+            padding: 2.5px;
+            background: linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #ec4899, #ef4444);
+            background-size: 200% auto;
+            animation: rainbow-animation 3s linear infinite;
         }
 
         .table-fixed-layout {
@@ -120,18 +129,18 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <!-- Splash Screen Dihapus -->
-
-    <div class="bg-green-200/50 backdrop-blur-sm p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all duration-500 ease-in-out">
+    <!-- Kontainer utama dengan background biru transparan -->
+    <div class="bg-blue-200/50 backdrop-blur-sm p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all duration-500 ease-in-out">
         <div class="text-center mb-8">
             <i class="fas fa-user-clock fa-3x text-indigo-500 mb-3"></i>
-            <h1 class="rainbow-title text-3xl md:text-4xl font-bold">List Sisa Masa Aktif Akun</h1>
+            <h1 class="title-3d-rainbow text-3xl md:text-4xl"><span>List Sisa Masa Aktif Akun</span></h1>
             <p class="text-gray-600 mt-2">Masukkan data akun untuk melihat daftar yang akan segera kedaluwarsa. Hasil akan diproses secara otomatis.</p>
         </div>
 
         <div class="mb-8">
             <label for="inputData" class="block text-sm font-semibold text-gray-700 mb-2">Masukkan Data Akun:</label>
-            <textarea id="inputData" rows="12" class="glowing-textarea w-full p-4 rounded-lg bg-blue-100 transition-shadow duration-200 ease-in-out resize-y" placeholder="Contoh:
+            <div class="rainbow-border-container rounded-lg">
+                <textarea id="inputData" rows="12" class="w-full p-4 rounded-md bg-gray-50 border-0 focus:ring-0 resize-y" placeholder="Contoh:
 modemsrpcombot, [05/06/2025 12:00]
 USER EXPIRATION NOTICE ❗
 ━━━━━━━━━━━━━━━━━━━
@@ -142,6 +151,7 @@ Detail Expired: 2025-06-08 08:14:49 WIB
 ━━━━━━━━━━━━━━━━━━━
 Please notify the user immediately
 ..."></textarea>
+            </div>
         </div>
 
         <div id="processingIndicator" class="text-center my-4" style="display: none;">
@@ -183,8 +193,6 @@ Please notify the user immediately
     </div>
 
     <script>
-        // Splash Screen Logic Dihapus
-        
         // Main App Logic
         const exportButton = document.getElementById('exportButton');
         const copyButton = document.getElementById('copyButton');
@@ -200,11 +208,7 @@ Please notify the user immediately
 
         let processedDataForExport = "";
         let debounceTimer;
-
-        const TODAY_DATE = new Date(2025, 5, 5); // 5 Juni 2025
-        TODAY_DATE.setHours(0, 0, 0, 0);
         
-        // Array kata-kata mutiara dari Hadis
         const hadithQuotes = [
             "\"Sebaik-baik manusia adalah yang paling bermanfaat bagi manusia lain.\" (HR. Ahmad)",
             "\"Senyummu di hadapan saudaramu adalah sedekah bagimu.\" (HR. Tirmidzi)",
@@ -253,6 +257,7 @@ Please notify the user immediately
             processingTimeInfo.textContent = "";
 
             setTimeout(() => {
+                const now = new Date();
                 const rawData = inputDataElement.value.trim();
                 if (!rawData) {
                     outputTableContainer.innerHTML = '<p class="text-gray-500 italic text-center py-4">Data yang diproses akan muncul di sini.</p>';
@@ -274,69 +279,41 @@ Please notify the user immediately
 
                 const accounts = [];
                 const processedUsernames = new Set();
-                let checkTimestampString = null;
-
+                
                 finalEntries.forEach(entryText => {
                     const usernameMatch = entryText.match(/Username:\s*(\S+)/);
                     const detailExpiredMatch = entryText.match(/Detail Expired:\s*(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})/);
                     const expiredOnMatch = entryText.match(/Expired on:\s*(\d+)\s*days? left/);
 
                     if (usernameMatch && detailExpiredMatch) {
-                        if (checkTimestampString === null) {
-                            checkTimestampString = detailExpiredMatch[1];
-                        }
-                        
                         const currentUsername = usernameMatch[1];
                         if (processedUsernames.has(currentUsername)) {
                             return;
                         }
                         const detailExpiredString = detailExpiredMatch[1];
-                        const dateParts = detailExpiredString.match(/(\d{4})-(\d{2})-(\d{2})/);
+                        const expiryDateObject = new Date(detailExpiredString.replace(' ', 'T'));
 
-                        if (dateParts) {
-                            const expiryDateForCalc = new Date(
-                                parseInt(dateParts[1]),
-                                parseInt(dateParts[2]) - 1,
-                                parseInt(dateParts[3])
-                            );
-                            expiryDateForCalc.setHours(0,0,0,0);
-                            const timeDifference = expiryDateForCalc.getTime() - TODAY_DATE.getTime();
-                            const calculatedDiffDays = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-
-                            if (calculatedDiffDays >= 0) {
-                                if (expiredOnMatch) {
-                                    accounts.push({
-                                        username: currentUsername,
-                                        expiredOn: detailExpiredString,
-                                        daysLeft: expiredOnMatch[1]
-                                    });
-                                    processedUsernames.add(currentUsername);
-                                } else {
-                                    console.warn("Entri dilewati: 'Expired on: X days left' tidak ditemukan.", entryText.substring(0,100));
-                                }
+                        if (expiryDateObject > now) {
+                            if (expiredOnMatch) {
+                                accounts.push({
+                                    username: currentUsername,
+                                    expiredOn: detailExpiredString,
+                                    daysLeft: expiredOnMatch[1],
+                                    expiryDate: expiryDateObject
+                                });
+                                processedUsernames.add(currentUsername);
+                            } else {
+                                console.warn("Entri dilewati: 'Expired on: X days left' tidak ditemukan.", entryText.substring(0,100));
                             }
-                        } else {
-                            console.warn("Tidak bisa parse format tanggal dari Detail Expired:", detailExpiredString);
                         }
                     }
                 });
-
-                let timeInfoString;
-                if(checkTimestampString) {
-                    const checkDate = new Date(checkTimestampString.replace(' ', 'T'));
-                    const formattedDateTime = `${checkDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${checkDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-                    timeInfoString = `Dicek pada: ${formattedDateTime}`;
-                } else {
-                    const currentTime = new Date();
-                    const formattedDateTime = `${currentTime.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-                    timeInfoString = `Dicek pada: ${formattedDateTime}`;
-                }
                 
-                // Pilih kata mutiara secara acak
+                const formattedDateTime = `${now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+                const timeInfoString = `Dicek pada: ${formattedDateTime}`;
                 const randomQuote = hadithQuotes[Math.floor(Math.random() * hadithQuotes.length)];
                 const fullInfoHtml = `${timeInfoString}<br><i class="mt-1 block">${randomQuote}</i>`;
                 const fullInfoText = `${timeInfoString}\n\n${randomQuote}`;
-
 
                 if (accounts.length === 0) {
                     showModal("Tidak ada data akun valid yang akan ditampilkan (mungkin semua sudah lewat, duplikat, atau format tidak sesuai).", "info");
@@ -348,14 +325,7 @@ Please notify the user immediately
                     return;
                 }
 
-                accounts.sort((a, b) => {
-                    const daysLeftA = parseInt(a.daysLeft);
-                    const daysLeftB = parseInt(b.daysLeft);
-                    if (daysLeftA !== daysLeftB) {
-                        return daysLeftA - daysLeftB;
-                    }
-                    return a.username.localeCompare(b.username);
-                });
+                accounts.sort((a, b) => a.expiryDate - b.expiryDate);
 
                 let tableHtml = `
                     <table class="table-fixed-layout min-w-full divide-y divide-gray-300 border border-gray-300 rounded-lg shadow-sm">
@@ -376,12 +346,22 @@ Please notify the user immediately
                 textOutput += "|===================================|\n";
 
                 accounts.forEach((account, index) => {
+                    let rowColorClass = 'hover:bg-gray-100'; // Default hover
+                    const daysLeft = parseInt(account.daysLeft);
+                    if (daysLeft === 1) {
+                        rowColorClass = 'bg-red-200/80 hover:bg-red-300/80';
+                    } else if (daysLeft === 2) {
+                        rowColorClass = 'bg-yellow-200/80 hover:bg-yellow-300/80';
+                    } else if (daysLeft === 3) {
+                        rowColorClass = 'bg-green-200/80 hover:bg-green-300/80';
+                    }
+
                     tableHtml += `
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300">${index + 1}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300 font-medium">${account.username}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 border-r border-gray-300">${account.expiredOn}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-sm ${parseInt(account.daysLeft) <= 3 ? 'text-red-600 font-bold' : 'text-gray-700'}">${account.daysLeft}</td>
+                        <tr class="${rowColorClass} transition-colors duration-150">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">${index + 1}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300 font-medium">${account.username}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800 border-r border-gray-300">${account.expiredOn}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800 font-bold">${account.daysLeft}</td>
                         </tr>`;
                     const noStr = (index + 1).toString().padEnd(2);
                     const akunStr = account.username.padEnd(10);
