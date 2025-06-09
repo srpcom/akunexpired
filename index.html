@@ -371,9 +371,8 @@ Please notify the user immediately
                     if (usernameMatch && detailExpiredMatch) {
                         const currentUsername = usernameMatch[1];
                         
-                        // **Logika baru untuk melewati akun trial**
                         if (currentUsername.toLowerCase().startsWith('trial')) {
-                            return; // Lewati iterasi ini
+                            return; 
                         }
 
                         if (processedUsernames.has(currentUsername)) {
